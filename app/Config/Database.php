@@ -25,12 +25,12 @@ class Database extends Config
      * @var array<string, mixed>
      */
    public array $default = [
-    'DSN'        => env('database.default.DSN', ''),
-    'hostname'   => env('database.default.hostname'),
-    'username'   => env('database.default.username'),
-    'password'   => env('database.default.password'),
-    'database'   => env('database.default.database'),
-    'DBDriver'   => env('database.default.DBDriver', 'Postgre'),
+    'DSN'        => '',
+    'hostname'   => '',
+    'username'   => '',
+    'password'   => '',
+    'database'   => '',
+    'DBDriver'   => 'Postgre',
     'DBPrefix'   => '',
     'pConnect'   => false,
     'DBDebug'    => true,
@@ -41,7 +41,7 @@ class Database extends Config
     'compress'   => false,
     'strictOn'   => false,
     'failover'   => [],
-    'port'       => env('database.default.port', 5432),
+    'port'       => 5432,
     'schema'     => 'public',
     'dateFormat' => [
         'date'     => 'Y-m-d',
