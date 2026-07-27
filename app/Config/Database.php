@@ -4,162 +4,49 @@ namespace Config;
 
 use CodeIgniter\Database\Config;
 
-/**
- * Database Configuration
- */
 class Database extends Config
 {
     /**
-     * The directory that holds the Migrations and Seeds directories.
+     * Directory for Migrations and Seeds
      */
     public string $filesPath = APPPATH . 'Database' . DIRECTORY_SEPARATOR;
 
     /**
-     * Lets you choose which connection group to use if no other is specified.
+     * Default connection group
      */
     public string $defaultGroup = 'default';
 
     /**
-     * The default database connection.
-     *
-     * @var array<string, mixed>
+     * Default Database Connection
      */
-   public array $default = [
-    'DSN'        => '',
-    'hostname'   => '',
-    'username'   => '',
-    'password'   => '',
-    'database'   => '',
-    'DBDriver'   => 'Postgre',
-    'DBPrefix'   => '',
-    'pConnect'   => false,
-    'DBDebug'    => true,
-    'charset'    => 'utf8',
-    'DBCollat'   => '',
-    'swapPre'    => '',
-    'encrypt'    => false,
-    'compress'   => false,
-    'strictOn'   => false,
-    'failover'   => [],
-    'port'       => 5432,
-    'schema'     => 'public',
-    'dateFormat' => [
-        'date'     => 'Y-m-d',
-        'datetime' => 'Y-m-d H:i:s',
-        'time'     => 'H:i:s',
-    ],
-];
-
-    //    /**
-    //     * Sample database connection for SQLite3.
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'database'    => 'database.db',
-    //        'DBDriver'    => 'SQLite3',
-    //        'DBPrefix'    => '',
-    //        'DBDebug'     => true,
-    //        'swapPre'     => '',
-    //        'failover'    => [],
-    //        'foreignKeys' => true,
-    //        'busyTimeout' => 1000,
-    //        'synchronous' => null,
-    //        'dateFormat'  => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
-
-    //    /**
-    //     * Sample database connection for Postgre.
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'DSN'        => '',
-    //        'hostname'   => 'localhost',
-    //        'username'   => 'root',
-    //        'password'   => 'root',
-    //        'database'   => 'ci4',
-    //        'schema'     => 'public',
-    //        'DBDriver'   => 'Postgre',
-    //        'DBPrefix'   => '',
-    //        'pConnect'   => false,
-    //        'DBDebug'    => true,
-    //        'charset'    => 'utf8',
-    //        'swapPre'    => '',
-    //        'failover'   => [],
-    //        'port'       => 5432,
-    //        'dateFormat' => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
-
-    //    /**
-    //     * Sample database connection for SQLSRV.
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'DSN'        => '',
-    //        'hostname'   => 'localhost',
-    //        'username'   => 'root',
-    //        'password'   => 'root',
-    //        'database'   => 'ci4',
-    //        'schema'     => 'dbo',
-    //        'DBDriver'   => 'SQLSRV',
-    //        'DBPrefix'   => '',
-    //        'pConnect'   => false,
-    //        'DBDebug'    => true,
-    //        'charset'    => 'utf8',
-    //        'swapPre'    => '',
-    //        'encrypt'    => false,
-    //        'failover'   => [],
-    //        'port'       => 1433,
-    //        'dateFormat' => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
-
-    //    /**
-    //     * Sample database connection for OCI8.
-    //     *
-    //     * You may need the following environment variables:
-    //     *   NLS_LANG                = 'AMERICAN_AMERICA.UTF8'
-    //     *   NLS_DATE_FORMAT         = 'YYYY-MM-DD HH24:MI:SS'
-    //     *   NLS_TIMESTAMP_FORMAT    = 'YYYY-MM-DD HH24:MI:SS'
-    //     *   NLS_TIMESTAMP_TZ_FORMAT = 'YYYY-MM-DD HH24:MI:SS'
-    //     *
-    //     * @var array<string, mixed>
-    //     */
-    //    public array $default = [
-    //        'DSN'        => 'localhost:1521/FREEPDB1',
-    //        'username'   => 'root',
-    //        'password'   => 'root',
-    //        'DBDriver'   => 'OCI8',
-    //        'DBPrefix'   => '',
-    //        'pConnect'   => false,
-    //        'DBDebug'    => true,
-    //        'charset'    => 'AL32UTF8',
-    //        'swapPre'    => '',
-    //        'failover'   => [],
-    //        'dateFormat' => [
-    //            'date'     => 'Y-m-d',
-    //            'datetime' => 'Y-m-d H:i:s',
-    //            'time'     => 'H:i:s',
-    //        ],
-    //    ];
+    public array $default = [
+        'DSN'          => '',
+        'hostname'     => '',
+        'username'     => '',
+        'password'     => '',
+        'database'     => '',
+        'DBDriver'     => 'Postgre',
+        'DBPrefix'     => '',
+        'pConnect'     => false,
+        'DBDebug'      => true,
+        'charset'      => 'utf8',
+        'DBCollat'     => '',
+        'swapPre'      => '',
+        'encrypt'      => false,
+        'compress'     => false,
+        'strictOn'     => false,
+        'failover'     => [],
+        'port'         => 5432,
+        'schema'       => 'public',
+        'dateFormat'   => [
+            'date'     => 'Y-m-d',
+            'datetime' => 'Y-m-d H:i:s',
+            'time'     => 'H:i:s',
+        ],
+    ];
 
     /**
-     * This database connection is used when running PHPUnit database tests.
-     *
-     * @var array<string, mixed>
+     * PHPUnit Database
      */
     public array $tests = [
         'DSN'         => '',
@@ -168,7 +55,7 @@ class Database extends Config
         'password'    => '',
         'database'    => ':memory:',
         'DBDriver'    => 'SQLite3',
-        'DBPrefix'    => 'db_',  // Needed to ensure we're working correctly with prefixes live. DO NOT REMOVE FOR CI DEVS
+        'DBPrefix'    => 'db_',
         'pConnect'    => false,
         'DBDebug'     => true,
         'charset'     => 'utf8',
@@ -189,38 +76,27 @@ class Database extends Config
         ],
     ];
 
-   public function __construct()
-{
-    parent::__construct();
+    public function __construct()
+    {
+        parent::__construct();
 
-    $this->default = [
-        'DSN'        => getenv('database.default.DSN') ?: '',
-        'hostname'   => getenv('database.default.hostname') ?: '',
-        'username'   => getenv('database.default.username') ?: '',
-        'password'   => getenv('database.default.password') ?: '',
-        'database'   => getenv('database.default.database') ?: '',
-        'DBDriver'   => getenv('database.default.DBDriver') ?: 'Postgre',
-        'DBPrefix'   => '',
-        'pConnect'   => false,
-        'DBDebug'    => true,
-        'charset'    => 'utf8',
-        'DBCollat'   => '',
-        'swapPre'    => '',
-        'encrypt'    => false,
-        'compress'   => false,
-        'strictOn'   => false,
-        'failover'   => [],
-        'port'       => (int)(getenv('database.default.port') ?: 5432),
-        'schema'     => 'public',
-        'dateFormat' => [
-            'date'     => 'Y-m-d',
-            'datetime' => 'Y-m-d H:i:s',
-            'time'     => 'H:i:s',
-        ],
-    ];
+        // Load values from environment variables
+        $this->default['hostname'] = getenv('DB_HOST') ?: '';
+        $this->default['username'] = getenv('DB_USERNAME') ?: '';
+        $this->default['password'] = getenv('DB_PASSWORD') ?: '';
+        $this->default['database'] = getenv('DB_DATABASE') ?: '';
+        $this->default['port']     = (int) (getenv('DB_PORT') ?: 5432);
 
-    if (ENVIRONMENT === 'testing') {
-        $this->defaultGroup = 'tests';
+        if (getenv('DB_DRIVER')) {
+            $this->default['DBDriver'] = getenv('DB_DRIVER');
+        }
+
+        if (getenv('DB_SCHEMA')) {
+            $this->default['schema'] = getenv('DB_SCHEMA');
+        }
+
+        if (ENVIRONMENT === 'testing') {
+            $this->defaultGroup = 'tests';
+        }
     }
-}
 }
