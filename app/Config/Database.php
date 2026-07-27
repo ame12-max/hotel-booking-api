@@ -189,15 +189,38 @@ class Database extends Config
         ],
     ];
 
-    public function __construct()
-    {
-        parent::__construct();
+   public function __construct()
+{
+    parent::__construct();
 
-        // Ensure that we always set the database group to 'tests' if
-        // we are currently running an automated test suite, so that
-        // we don't overwrite live data on accident.
-        if (ENVIRONMENT === 'testing') {
-            $this->defaultGroup = 'tests';
-        }
+    $this->default = [
+        'DSN'        => getenv('database.default.DSN') ?: '',
+        'hostname'   => getenv('database.default.hostname') ?: '',
+        'username'   => getenv('database.default.username') ?: '',
+        'password'   => getenv('database.default.password') ?: '',
+        'database'   => getenv('database.default.database') ?: '',
+        'DBDriver'   => getenv('database.default.DBDriver') ?: 'Postgre',
+        'DBPrefix'   => '',
+        'pConnect'   => false,
+        'DBDebug'    => true,
+        'charset'    => 'utf8',
+        'DBCollat'   => '',
+        'swapPre'    => '',
+        'encrypt'    => false,
+        'compress'   => false,
+        'strictOn'   => false,
+        'failover'   => [],
+        'port'       => (int)(getenv('database.default.port') ?: 5432),
+        'schema'     => 'public',
+        'dateFormat' => [
+            'date'     => 'Y-m-d',
+            'datetime' => 'Y-m-d H:i:s',
+            'time'     => 'H:i:s',
+        ],
+    ];
+
+    if (ENVIRONMENT === 'testing') {
+        $this->defaultGroup = 'tests';
     }
+}
 }
