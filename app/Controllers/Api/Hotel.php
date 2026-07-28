@@ -119,122 +119,78 @@ class Hotel extends ResourceController
      * Create hotel with optional image upload
      */
     public function create()
-    {
-        // Detect content type
-        $contentType = $this->request->getHeaderLine('Content-Type');
-
-        // For JSON requests
-        if (strpos($contentType, 'application/json') !== false) {
-            $data = $this->request->getJSON(true);
-            if (empty($data)) {
-                return $this->respond([
-                    'status' => false,
-                    'message' => 'Invalid JSON payload'
-                ], 400);
-            }
-            // JSON request cannot include file, so image will be null
-            $imageName = null;
-        } else {
-            // For multipart/form-data or URL-encoded
-            $data = $this->request->getPost();
-            if (empty($data)) {
-                // Fallback to raw input
-                $raw = $this->request->getRawInput();
-                if (!empty($raw)) {
-                    $data = json_decode($raw, true) ?? [];
-                }
-            }
-
-            // Handle file upload
-            $imageName = null;
-            $file = $this->request->getFile('image');
-            if ($file && $file->isValid() && !$file->hasMoved()) {
-                try {
-                    if (!in_array($file->getMimeType(), $this->allowedTypes)) {
-                        return $this->respond([
-                            'status' => false,
-                            'message' => 'Invalid image type. Allowed: JPEG, PNG, WEBP, GIF'
-                        ], 400);
-                    }
-                    if ($file->getSize() > $this->maxSize * 1024) {
-                        return $this->respond([
-                            'status' => false,
-                            'message' => 'Image size exceeds ' . $this->maxSize . 'KB'
-                        ], 400);
-                    }
-
-                    // Ensure directory exists
-                    if (!is_dir($this->uploadPath)) {
-                        mkdir($this->uploadPath, 0755, true);
-                    }
-
-                    $newName = $file->getRandomName();
-                    if ($file->move($this->uploadPath, $newName)) {
-                        $imageName = $newName;
-                    } else {
-                        return $this->respond([
-                            'status' => false,
-                            'message' => 'Failed to move uploaded file. Check directory permissions.'
-                        ], 500);
-                    }
-                } catch (\Exception $e) {
-                    return $this->respond([
-                        'status' => false,
-                        'message' => 'File upload error: ' . $e->getMessage()
-                    ], 500);
-                }
-            }
-        }
-
-        // Validate data
-        $rules = [
-            'name'    => 'required|min_length[3]',
-            'address' => 'required',
-            'city'    => 'required',
-            'description' => 'permit_empty',
-            'phone'   => 'permit_empty',
-            'email'   => 'permit_empty|valid_email',
-            'rating'  => 'permit_empty|decimal'
-        ];
-
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond([
-                'status' => false,
-                'errors' => $this->validator->getErrors()
-            ], 422);
-        }
-
-        // Prepare hotel data
-        $hotelData = [
-            'name'        => $data['name'],
-            'address'     => $data['address'],
-            'city'        => $data['city'],
-            'description' => $data['description'] ?? null,
-            'phone'       => $data['phone'] ?? null,
-            'email'       => $data['email'] ?? null,
-            'rating'      => (float) ($data['rating'] ?? 0),
-            'image'       => $imageName,
-        ];
-
-        try {
-            $this->model->insert($hotelData);
-            $id = $this->model->getInsertID();
-            $newHotel = $this->model->find($id);
-            if ($newHotel && !empty($newHotel['image'])) {
-                $newHotel['image_url'] = base_url($this->uploadPath . $newHotel['image']);
-            }
-            return $this->respondCreated([
-                'status'  => true,
-                'message' => 'Hotel created successfully',
-                'data'    => $newHotel
-            ]);
-        } catch (\Exception $e) {
-            return $this->respond([
-                'status' => false,
-                'message' => 'Database error: ' . $e->getMessage()
-            ], 500);
+{
+    $data = $this->request->getJSON(true);
+    if (empty($data)) {
+        // fallback for form-data
+        $data = $this->request->getPost();
+        if (empty($data)) {
+            $data = json_decode($this->request->getRawInput(), true) ?? [];
         }
     }
+
+    $rules = [
+        'name'    => 'required|min_length[3]',
+        'address' => 'required',
+        'city'    => 'required',
+        'description' => 'permit_empty',
+        'phone'   => 'permit_empty',
+        'email'   => 'permit_empty|valid_email',
+        'rating'  => 'permit_empty|decimal'
+    ];
+
+    if (!$this->validateData($data, $rules)) {
+        return $this->respond([
+            'status' => false,
+            'errors' => $this->validator->getErrors()
+        ], 422);
+    }
+
+    $imageName = null;
+    $file = $this->request->getFile('image');
+
+    if ($file && $file->isValid() && !$file->hasMoved()) {
+        try {
+            $uploadPath = FCPATH . 'uploads/hotels/';
+            if (!is_dir($uploadPath)) {
+                mkdir($uploadPath, 0755, true);
+            }
+            $newName = $file->getRandomName();
+            if ($file->move($uploadPath, $newName)) {
+                $imageName = $newName;
+            } else {
+                // Log the error
+                log_message('error', 'Failed to move uploaded file');
+            }
+        } catch (\Exception $e) {
+            log_message('error', 'File upload error: ' . $e->getMessage());
+        }
+    }
+
+    $hotelData = [
+        'name'        => $data['name'],
+        'address'     => $data['address'],
+        'city'        => $data['city'],
+        'description' => $data['description'] ?? null,
+        'phone'       => $data['phone'] ?? null,
+        'email'       => $data['email'] ?? null,
+        'rating'      => (float) ($data['rating'] ?? 0),
+        'image'       => $imageName,
+    ];
+
+    $this->model->insert($hotelData);
+    $id = $this->model->getInsertID();
+    $newHotel = $this->model->find($id);
+    if ($newHotel && !empty($newHotel['image'])) {
+        $newHotel['image_url'] = base_url('uploads/hotels/' . $newHotel['image']);
+    }
+
+    return $this->respondCreated([
+        'status' => true,
+        'message' => 'Hotel created successfully',
+        'data'    => $newHotel
+    ]);
+}
 
     /**
      * PUT /api/admin/hotels/{id}
