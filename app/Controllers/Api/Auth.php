@@ -3,6 +3,8 @@
 namespace App\Controllers\Api;
 
 use App\Models\UserModel;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class Auth extends BaseApiController
 {
@@ -13,82 +15,144 @@ class Auth extends BaseApiController
         $this->userModel = new UserModel();
     }
 
-public function register()
-{
-    $data = $this->request->getJSON(true);
+    public function register()
+    {
+        try {
+            $data = $this->request->getJSON(true);
 
-    $rules = [
-        'full_name' => 'required|min_length[3]',
-        'email'     => 'required|valid_email|is_unique[users.email]',
-        'phone'     => 'required|is_unique[users.phone]',
-        'password'  => 'required|min_length[6]',
-    ];
+            if (empty($data)) {
+                return $this->respond([
+                    'status' => false,
+                    'message' => 'No data provided'
+                ], 400);
+            }
 
-    if (!$this->validateData($data, $rules)) {
-        return $this->respond([
-            'status' => false,
-            'errors' => $this->validator->getErrors(),
-        ], 422);
+            $rules = [
+                'full_name' => 'required|min_length[3]',
+                'email'     => 'required|valid_email|is_unique[users.email]',
+                'phone'     => 'required|is_unique[users.phone]',
+                'password'  => 'required|min_length[6]',
+            ];
+
+            if (!$this->validateData($data, $rules)) {
+                return $this->respond([
+                    'status' => false,
+                    'errors' => $this->validator->getErrors(),
+                ], 422);
+            }
+
+            $userData = [
+                'full_name' => $data['full_name'],
+                'email'     => $data['email'],
+                'phone'     => $data['phone'],
+                'password'  => password_hash($data['password'], PASSWORD_DEFAULT),
+                'role'      => 'customer',
+            ];
+
+            $this->userModel->insert($userData);
+
+            return $this->respondCreated([
+                'status'  => true,
+                'message' => 'User registered successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Register error: ' . $e->getMessage());
+            return $this->respond([
+                'status' => false,
+                'message' => 'Registration failed: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    $userData = [
-        'full_name' => $data['full_name'],
-        'email'     => $data['email'],
-        'phone'     => $data['phone'],
-        'password'  => password_hash(
-            $data['password'],
-            PASSWORD_DEFAULT
-        ),
-        'role'      => 'customer',
-    ];
+    public function login()
+    {
+        try {
+            $data = $this->request->getJSON(true);
 
-    $this->userModel->insert($userData);
+            if (empty($data)) {
+                return $this->respond([
+                    'status' => false,
+                    'message' => 'No data provided'
+                ], 400);
+            }
 
-    return $this->respondCreated([
-        'status' => true,
-        'message' => 'User registered successfully'
-    ]);
-}
+            $rules = [
+                'email'    => 'required|valid_email',
+                'password' => 'required'
+            ];
 
-public function login()
-{
-    $data = $this->request->getJSON(true);
+            if (!$this->validateData($data, $rules)) {
+                return $this->respond([
+                    'status' => false,
+                    'errors' => $this->validator->getErrors()
+                ], 422);
+            }
 
-    $email = $data['email'] ?? '';
-    $password = $data['password'] ?? '';
+            $email = $data['email'];
+            $password = $data['password'];
 
-    $user = $this->userModel
-        ->where('email', $email)
-        ->first();
+            $user = $this->userModel->where('email', $email)->first();
 
-    if (!$user) {
-        return $this->failUnauthorized('Invalid credentials');
+            if (!$user) {
+                return $this->failUnauthorized('Invalid credentials');
+            }
+
+            if (!password_verify($password, $user['password'])) {
+                return $this->failUnauthorized('Invalid credentials');
+            }
+
+            // ✅ JWT_SECRET must be defined in environment
+            $jwtSecret = env('JWT_SECRET');
+            if (empty($jwtSecret)) {
+                log_message('error', 'JWT_SECRET is not set');
+                return $this->respond([
+                    'status' => false,
+                    'message' => 'Server configuration error'
+                ], 500);
+            }
+
+            $payload = [
+                'iss' => base_url(),
+                'aud' => base_url(),
+                'iat' => time(),
+                'exp' => time() + (60 * 60 * 24), // 1 day
+                'data' => [
+                    'id'        => $user['id'],
+                    'full_name' => $user['full_name'],
+                    'email'     => $user['email'],
+                    'role'      => $user['role']
+                ]
+            ];
+
+            $token = JWT::encode($payload, $jwtSecret, 'HS256');
+
+            return $this->respond([
+                'status' => true,
+                'token'  => $token,
+                'user'   => [
+                    'id'        => $user['id'],
+                    'full_name' => $user['full_name'],
+                    'email'     => $user['email'],
+                    'role'      => $user['role']
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            log_message('error', 'Login error: ' . $e->getMessage());
+            log_message('error', 'Stack trace: ' . $e->getTraceAsString());
+            return $this->respond([
+                'status' => false,
+                'message' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
+        }
     }
-
-    if (!password_verify($password, $user['password'])) {
-        return $this->failUnauthorized('Invalid credentials');
-    }
-
-    $token = generateJWT($user);
-
-    return $this->respond([
-        'status' => true,
-        'message' => 'Login successful',
-        'token' => $token,
-        'user' => [
-            'id' => $user['id'],
-            'full_name' => $user['full_name'],
-            'email' => $user['email'],
-            'role' => $user['role']
-        ]
-    ]);
-}
 
     public function logout()
     {
-        return $this->successResponse(
-            [],
-            'Logged out successfully'
-        );
+        return $this->respond([
+            'status' => true,
+            'message' => 'Logged out successfully'
+        ]);
     }
 }
